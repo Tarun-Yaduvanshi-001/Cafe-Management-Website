@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/features/AuthSlice';
 import { Button } from './ui/button';
 import {
@@ -11,20 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Coffee, UserCircle } from 'lucide-react';
+import { LogOut, Coffee, UserCircle, LayoutDashboard } from 'lucide-react';
 
 function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // FIX: Get name and email directly from the auth state
-  const { name, email } = useSelector((state) => state.auth);
+  const { name, email, role } = useSelector((state) => state.auth);
 
   const handleLogoutClick = () => {
     dispatch(logout())
       .unwrap()
-      .then(() => {
-        navigate('/login');
-      })
+      .then(() => navigate('/login'))
       .catch((err) => {
         console.error('Logout failed', err);
         navigate('/login');
@@ -42,38 +39,48 @@ function Navbar() {
             </span>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center space-x-2 text-white hover:bg-orange-500/20 hover:text-orange-400"
-              >
-                <UserCircle className="h-5 w-5" />
-                {/* FIX: Use the 'name' variable directly */}
-                <span>{name || 'Profile'}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-gray-900 border-gray-800 text-white">
-              {/* FIX: Display the user's name and email in the menu */}
-              <DropdownMenuLabel className="flex flex-col space-y-1">
-                <span className="font-bold">{name || 'Welcome!'}</span>
-                <span className="text-xs font-normal text-gray-400">{email}</span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-gray-700" />
-              <DropdownMenuItem
-                className="cursor-pointer focus:bg-gray-800"
-              >
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer focus:bg-red-500/20 focus:text-red-400"
-                onClick={handleLogoutClick}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-4">
+            {role === 'admin' && (
+              <Link to="/dashboard">
+                <Button
+                  variant="ghost"
+                  className="text-white hover:bg-orange-500/20 hover:text-orange-400"
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center space-x-2 text-white hover:bg-orange-500/20 hover:text-orange-400"
+                >
+                  <UserCircle className="h-5 w-5" />
+                  <span>{name || 'Profile'}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-gray-900 border-gray-800 text-white">
+                <DropdownMenuLabel className="flex flex-col space-y-1">
+                  <span className="font-bold">{name || 'Welcome!'}</span>
+                  <span className="text-xs font-normal text-gray-400">{email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuItem className="cursor-pointer focus:bg-gray-800">
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer focus:bg-red-500/20 focus:text-red-400"
+                  onClick={handleLogoutClick}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </nav>

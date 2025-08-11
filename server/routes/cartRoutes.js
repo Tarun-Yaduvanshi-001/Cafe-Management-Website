@@ -1,14 +1,16 @@
 import express from 'express';
-import { AddToCart, getCart, removeItemFromCart } from '../controllers/cartController.js';
-import verify from '../middleware/verify.js'; // Import verify middleware
+import { AddToCart, getCart, removeItemFromCart, updateCartItemQuantity } from '../controllers/cartController.js';
+import verify from '../middleware/verify.js';
 
 const router = express.Router();
 
-// SECURITY FIX: Protect all cart routes to ensure only authenticated users can access them.
+// All cart routes should be protected
 router.use(verify);
 
 router.post('/addToCart', AddToCart);
-router.post('/getCart', getCart);
+// FIX: Change this from .post to .get to match the frontend request
+router.get('/getCart', getCart);
 router.post('/removeItem', removeItemFromCart);
+router.put('/updateQuantity', updateCartItemQuantity);
 
 export default router;

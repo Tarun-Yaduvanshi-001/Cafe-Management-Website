@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Name is required'], // FIX: Corrected typo 'requied'
+    required: [true, 'Name is required'],
     trim: true,
   },
   description: {
@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['coffee', 'tea', 'food', 'dessert', 'pastries'], // Added pastries for consistency
+    enum: ['coffee', 'tea', 'food', 'dessert', 'pastry'],
   },
   price: {
     type: Number,
@@ -40,10 +40,18 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  rating: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Rating',
+  rating : [{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'Rating'
   }],
+  // FIX: Add the missing createdBy field
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  }
+}, {
+    timestamps: true // Adds createdAt and updatedAt fields automatically
 });
 
 const Product = mongoose.model('Product', productSchema);

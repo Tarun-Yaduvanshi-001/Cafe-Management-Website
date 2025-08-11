@@ -4,6 +4,8 @@ import axios from 'axios';
 import { signOut } from 'firebase/auth';
 import { auth } from './../../config/firebase';
 
+const API_BASE_URL = 'http://localhost:3000/api';
+
 const initialState = {
   isInitializing: true,
   isLoading: false,
@@ -14,45 +16,36 @@ const initialState = {
   email: null,
 };
 
-// This thunk is for Google's redirect result
-export const verifyUserToken = createAsyncThunk('auth/verifyUserToken', async (idToken, { rejectWithValue }) => {
-    try {
-      const res = await axios.post('http://localhost:3000/api/auth/verify-google', { idToken }, { withCredentials: true });
-      return res.data;
-    } catch (error) { return rejectWithValue(error.response?.data); }
-});
-
-// ADD THIS NEW THUNK: It checks for an existing session cookie on page load
 export const verifyAppSession = createAsyncThunk('auth/verifyAppSession', async (_, { rejectWithValue }) => {
     try {
-        const response = await axios.post('http://localhost:3000/api/auth/verify', null, { withCredentials: true });
+        const response = await axios.post(`${API_BASE_URL}/auth/verify`, null, { withCredentials: true });
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response?.data);
     }
 });
 
-// --- login, signup, and logout thunks remain unchanged ---
-export const login = createAsyncThunk('loginAuth', async (data, { rejectWithValue }) => {
+export const login = createAsyncThunk('auth/login', async (data, { rejectWithValue }) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', data, { withCredentials: true });
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, data, { withCredentials: true });
       return response.data;
     } catch (error) { return rejectWithValue(error.response?.data || 'Login failed'); }
 });
-export const signup = createAsyncThunk('signAuth', async (data, { rejectWithValue }) => {
+
+export const signup = createAsyncThunk('auth/signup', async (data, { rejectWithValue }) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/signup', data);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, data);
       return response.data;
     } catch (error) { return rejectWithValue(error.response?.data || 'Signup failed'); }
 });
+
 export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
     try {
       await signOut(auth);
-      await axios.post('http://localhost:3000/api/auth/logout', null, { withCredentials: true });
+      await axios.post(`${API_BASE_URL}/auth/logout`, null, { withCredentials: true });
       return true;
     } catch (error) { return rejectWithValue(error.response?.data || 'Logout failed'); }
 });
-// --- End of thunks ---
 
 const AuthSlice = createSlice({
   name: 'auth',
@@ -100,27 +93,15 @@ const AuthSlice = createSlice({
       .addCase(logout.rejected, (state) => { handleLogout(state); });
 
     builder
-      .addCase(verifyUserToken.fulfilled, (state, action) => {
+      .addCase(verifyAppSession.fulfilled, (state, action) => {
         if (action.payload) {
-          handleAuthSuccess(state, action);
+            handleAuthSuccess(state, action);
         }
         state.isInitializing = false;
       })
-      .addCase(verifyUserToken.rejected, (state) => {
+      .addCase(verifyAppSession.rejected, (state) => {
         state.isInitializing = false;
       });
-      
-    // ADD CASES FOR THE NEW SESSION VERIFIER
-    builder
-        .addCase(verifyAppSession.fulfilled, (state, action) => {
-            if (action.payload) {
-                handleAuthSuccess(state, action);
-            }
-            state.isInitializing = false;
-        })
-        .addCase(verifyAppSession.rejected, (state) => {
-            state.isInitializing = false;
-        });
   },
 });
 

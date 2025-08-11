@@ -8,7 +8,8 @@ const orderSchema = new mongoose.Schema({
   },
   items: [
     {
-      product: {
+      // FIX: Rename 'product' to 'productId' to match the rest of your app
+      productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
       },
@@ -23,13 +24,18 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['Pending', 'Preparing', 'Ready', 'Completed', 'Failed'],
+    default: 'Pending',
+  },
   paymentStatus: {
     type: String,
     enum: ['Pending', 'Paid', 'Failed'],
   },
   paymentMethod: {
     type: String,
-    enum: ['UPI', 'DEBIT CARD', 'CASH ON DELIVERY'], // FIX: Corrected typo 'DEVLIVERY'
+    enum: ['UPI', 'DEBIT CARD', 'CASH ON DELIVERY'],
   },
   orderTime: {
     type: Date,

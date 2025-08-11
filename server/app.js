@@ -6,13 +6,14 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import connectMongodb from './config/db.js';
 
 dotenv.config();
 
 const app = express();
 
-// --- Middleware Setup ---
 const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true,
@@ -22,8 +23,6 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
-
-// --- Database and Firebase Initialization ---
 connectMongodb();
 
 const serviceAccount = {
@@ -44,10 +43,10 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-
-// --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api', cartRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/health', (req, res) => {
   res.send('Server is running and healthy.');

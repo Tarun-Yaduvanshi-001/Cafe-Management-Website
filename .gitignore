@@ -1,5 +1,18 @@
 client/node_modules
 server/node_modules 
 
-client/.env
+# Ignore environment files
 server/.env
+client/.env
+
+# Ignore build directories
+client/build
+client/dist
+# Ignore log files
+client/logs
+server/logs
+
+# Ignore temporary files
+*.tmp
+# Ignore IDE specific files
+.vscode/
