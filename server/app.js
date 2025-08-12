@@ -1,25 +1,20 @@
-import express from 'express';
-import admin from 'firebase-admin';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import express from "express";
+import admin from "firebase-admin";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-import authRoutes from './routes/authRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import connectMongodb from './config/db.js';
+import authRoutes from "./routes/authRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js"; // 1. Import payment routes
+import connectMongodb from "./config/db.js";
 
 dotenv.config();
-
 const app = express();
-
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  credentials: true,
-};
+const corsOptions = { origin: "http://localhost:5173", credentials: true };
 app.use(cors(corsOptions));
-
 app.use(cookieParser());
 app.use(express.json());
 
@@ -29,7 +24,7 @@ const serviceAccount = {
   type: process.env.TYPE,
   project_id: process.env.PROJECT_ID,
   private_key_id: process.env.PRIVATE_KEY_ID,
-  private_key: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+  private_key: process.env.PRIVATE_KEY.replace(/\\n/g, "\n"),
   client_email: process.env.CLIENT_EMAIL,
   client_id: process.env.CLIENT_ID,
   auth_uri: process.env.AUTH_URI,
@@ -39,17 +34,16 @@ const serviceAccount = {
   universe_domain: process.env.UNIVERSE_DOMAIN,
 };
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
-app.use('/api/auth', authRoutes);
-app.use('/api', cartRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/admin', adminRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", cartRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/payment", paymentRoutes); // 2. Add payment routes
 
-app.get('/health', (req, res) => {
-  res.send('Server is running and healthy.');
+app.get("/health", (req, res) => {
+  res.send("Server is running and healthy.");
 });
 
 export default app;

@@ -143,7 +143,7 @@ export function MenuView() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredItems.map((item) => (
           <Card key={item._id} className="bg-gray-900 border-gray-800">
             <CardHeader className="pb-3">

@@ -2,12 +2,13 @@ import Product from '../models/product.js';
 
 export const getAllProduct = async (req, res) => {
   try {
-    const products = await Product.find({ isAvailable: true }) // Only show available products to customers
+    // FIX: Remove the { isAvailable: true } filter to send ALL products
+    const products = await Product.find({})
       .populate('createdBy', 'name phone');
 
-    // FIX: Always use a 'products' key for consistency
     return res.status(200).json({ success: true, products: products });
-  } catch (error) {
+  } catch (error)
+{
     console.error("Error in getAllProduct:", error);
     return res.status(500).json({ message: 'Server error getting products.', error: error.message });
   }
@@ -17,7 +18,6 @@ export const getAllProduct = async (req, res) => {
 export const getAllAdminProducts = async (req, res) => {
   try {
     const products = await Product.find({});
-    // FIX: The admin view also expects a 'menu' key based on our slice
     return res.status(200).json({ success: true, menu: products });
   } catch (error) {
     console.error("Error in getAllAdminProducts:", error);
@@ -31,7 +31,6 @@ export const createProduct = async (req, res) => {
     if (!name || !description || !category || !price) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
-
     const newProduct = await Product.create({
       createdBy: req.user.id,
       name,
@@ -40,7 +39,6 @@ export const createProduct = async (req, res) => {
       price,
       isAvailable,
     });
-
     return res.status(201).json({ success: true, product: newProduct });
   } catch (error) {
     console.error("Error in createProduct:", error);
@@ -52,11 +50,9 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
-
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,

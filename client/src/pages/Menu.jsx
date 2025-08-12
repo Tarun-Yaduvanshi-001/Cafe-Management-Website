@@ -14,6 +14,12 @@ import { addToCart, getCart, removeItemFromCart, updateCartQuantity } from '../r
 import { fetchProducts } from '../redux/features/productSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
+import { loadStripe } from '@stripe/stripe-js'; // Import loadStripe
+import axios from 'axios';
+import { toast } from 'sonner';
+
+// Initialize Stripe outside the component
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const categories = ['All', 'Coffee', 'Pastry', 'Food', 'Tea', 'Dessert'];
 
@@ -47,6 +53,27 @@ const Menu = () => {
       handleRemoveFromCart(productId);
     } else {
       dispatch(updateCartQuantity({ productId, quantity: newQuantity }));
+    }
+  };
+
+  // The checkout handler for the "Place Order" button
+  const handleCheckout = async () => {
+    toast.info("Redirecting to payment...");
+    try {
+        const stripe = await stripePromise;
+        const response = await axios.post('http://localhost:3000/api/payment/create-checkout-session', {}, { withCredentials: true });
+        const session = response.data;
+        
+        const result = await stripe.redirectToCheckout({
+            sessionId: session.id,
+        });
+
+        if (result.error) {
+            toast.error(result.error.message);
+        }
+    } catch (error) {
+        toast.error("Checkout failed. Please try again.");
+        console.error("Checkout error:", error);
     }
   };
 
@@ -96,7 +123,14 @@ const Menu = () => {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
           {filteredMenuItems.map((item) => (
-            <Card key={item._id} className="bg-gray-900/50 border-gray-800 backdrop-blur-sm hover:bg-gray-800/50 transition-all duration-300 hover:scale-105 hover:shadow-xl group">
+            <Card
+              key={item._id}
+              className={`bg-gray-900/50 border-gray-800 backdrop-blur-sm transition-all duration-300 group ${
+                item.isAvailable 
+                  ? 'hover:bg-gray-800/50 hover:scale-105 hover:shadow-xl' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+            >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -116,9 +150,23 @@ const Menu = () => {
                 <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
                 <div className="flex justify-between items-center">
                   <span className="text-orange-400 font-bold text-xl">${(item.price || 0).toFixed(2)}</span>
-                  <Button onClick={() => handleAddToCart(item)} className="bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200 hover:scale-105" size="sm">
-                    <Plus className="w-4 h-4" /> Add
-                  </Button>
+                  {item.isAvailable ? (
+                    <Button 
+                      onClick={() => handleAddToCart(item)} 
+                      className="bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200 hover:scale-105" 
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4" /> Add
+                    </Button>
+                  ) : (
+                    <Button 
+                      disabled 
+                      className="bg-gray-700 text-gray-400 cursor-not-allowed" 
+                      size="sm"
+                    >
+                      Unavailable
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -133,12 +181,10 @@ const Menu = () => {
                 <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[1.5rem] h-6 rounded-full flex items-center justify-center">{totalCartItems}</Badge>
               </Button>
             </SheetTrigger>
-            {/* FIX: Add flexbox layout to the SheetContent to manage spacing */}
             <SheetContent className="bg-gray-900 border-gray-800 text-white flex flex-col">
               <SheetHeader>
                 <SheetTitle className="text-white text-xl">Your Order</SheetTitle>
               </SheetHeader>
-              {/* FIX: This new div will contain the list of items and will be the scrollable area */}
               <div className="flex-1 overflow-y-auto pr-4 -mr-4 space-y-4">
                 {cart?.items?.map((item) => (
                   <div key={item.productId._id} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
@@ -148,34 +194,20 @@ const Menu = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <Trash2 onClick={() => handleRemoveFromCart(item.productId._id)} className="text-red-500 hover:scale-110 transition-all duration-150 ease-in-out cursor-pointer" />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-8 h-8 p-0 border-gray-600 text-gray-300 hover:bg-gray-700"
-                        onClick={() => handleQuantityChange(item.productId._id, item.quantity - 1)}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </Button>
+                      <Button size="sm" variant="outline" className="w-8 h-8 p-0 border-gray-600 text-gray-300 hover:bg-gray-700" onClick={() => handleQuantityChange(item.productId._id, item.quantity - 1)}><Minus className="w-3 h-3" /></Button>
                       <span className="w-8 text-center text-white font-medium">{item.quantity}</span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-8 h-8 p-0 border-gray-600 text-gray-300 hover:bg-gray-700"
-                        onClick={() => handleQuantityChange(item.productId._id, item.quantity + 1)}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </Button>
+                      <Button size="sm" variant="outline" className="w-8 h-8 p-0 border-gray-600 text-gray-300 hover:bg-gray-700" onClick={() => handleQuantityChange(item.productId._id, item.quantity + 1)}><Plus className="w-3 h-3" /></Button>
                     </div>
                   </div>
                 ))}
               </div>
-              {/* FIX: This footer will now stay at the bottom */}
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span className="text-white">Total:</span>
                   <span className="text-orange-400">${cart.totalPrice.toFixed(2)}</span>
                 </div>
-                <Button className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white">Place Order</Button>
+                {/* FIX: Reconnected the handleCheckout function to the onClick event */}
+                <Button onClick={handleCheckout} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white">Place Order</Button>
               </div>
             </SheetContent>
           </Sheet>

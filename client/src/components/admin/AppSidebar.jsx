@@ -45,9 +45,9 @@ export function AppSidebar({ activeView, setActiveView }) {
             <Coffee className="w-6 h-6 text-white" />
           </div>
           <div>
-            <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            {/* <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
               CafeHub
-            </span>
+            </span> */}
             <p className="text-gray-400 text-xs">Management Portal</p>
           </div>
         </div>
