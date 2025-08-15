@@ -1,8 +1,9 @@
 import { setCookie, removeCookie } from '../../../utils/utils';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { signOut } from 'firebase/auth';
-import { auth } from './../../config/firebase';
+// Import signInWithPopup
+import { signOut, signInWithPopup } from 'firebase/auth';
+import { auth, googleAuthProvider } from './../../config/firebase';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -37,6 +38,22 @@ export const signup = createAsyncThunk('auth/signup', async (data, { rejectWithV
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, data);
       return response.data;
     } catch (error) { return rejectWithValue(error.response?.data || 'Signup failed'); }
+});
+
+// NEW: Function to handle Google Sign-In via Pop-up
+export const signInWithGoogle = createAsyncThunk('auth/signInWithGoogle', async (_, { rejectWithValue }) => {
+    try {
+        // 1. Open the Google Sign-In pop-up
+        const result = await signInWithPopup(auth, googleAuthProvider);
+        // 2. Get the idToken from the successful sign-in
+        const idToken = await result.user.getIdToken();
+        // 3. Send the token to our backend for verification and session creation
+        const response = await axios.post(`${API_BASE_URL}/auth/verify-google`, { idToken }, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        const errorMessage = error.response?.data || { message: error.message || 'Google Sign-In failed.' };
+        return rejectWithValue(errorMessage);
+    }
 });
 
 export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
@@ -100,8 +117,18 @@ const AuthSlice = createSlice({
         state.isInitializing = false;
       })
       .addCase(verifyAppSession.rejected, (state) => {
+        handleLogout(state);
         state.isInitializing = false;
       });
+
+    // ADDED: Builder case for the new Google Sign-In action
+    builder
+        .addCase(signInWithGoogle.pending, (state) => { state.isLoading = true; })
+        .addCase(signInWithGoogle.fulfilled, (state, action) => {
+            state.isLoading = false;
+            handleAuthSuccess(state, action);
+        })
+        .addCase(signInWithGoogle.rejected, (state) => { state.isLoading = false; });
   },
 });
 

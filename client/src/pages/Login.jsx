@@ -9,13 +9,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Coffee, Moon, Star, Sparkles } from 'lucide-react';
-import { login, signup } from '../redux/features/AuthSlice';
-import { signInWithRedirect } from 'firebase/auth';
-import { auth, googleAuthProvider } from './../config/firebase';
+import { Coffee, Sparkles } from 'lucide-react';
+// Import the new signInWithGoogle action
+import { login, signup, signInWithGoogle } from '../redux/features/AuthSlice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner'; // Import the toast function
+import { toast } from 'sonner';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -29,13 +28,29 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // The useEffect for getRedirectResult is no longer needed and can be removed.
+
   const handleInputChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // UPDATED: This function now dispatches the new pop-up action
   const handleLoginWithGoogle = () => {
-    toast.info('Redirecting to Google for sign-in...');
-    signInWithRedirect(auth, googleAuthProvider);
+    const toastId = toast.loading('Opening Google Sign-In...');
+    dispatch(signInWithGoogle())
+      .unwrap()
+      .then((response) => {
+        toast.success('Login Successful!', {
+          id: toastId,
+          description: `Welcome, ${response.name}!`,
+        });
+        navigate('/menu');
+      })
+      .catch((error) => {
+        toast.error(error.message || 'An error occurred with Google Sign-In.', {
+          id: toastId,
+        });
+      });
   };
 
   const handleSubmit = (e) => {
