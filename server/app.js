@@ -9,6 +9,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js"; // 1. Import payment routes
+import userRoutes from "./routes/userRoutes.js"; // Import user routes
 import connectMongodb from "./config/db.js";
 
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api", cartRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes); // 2. Add payment routes
+app.use("/api/user", userRoutes); // Use user routes
 
 app.get("/health", (req, res) => {
   res.send("Server is running and healthy.");

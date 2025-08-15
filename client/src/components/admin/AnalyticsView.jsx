@@ -7,7 +7,7 @@ export function AnalyticsView() {
   // Fetch live analytics data from the Redux store
   const { analytics, status } = useSelector(state => state.admin);
 
-  const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => `₹ ${(amount || 0).toFixed(2)}`;
 
   // This check is now more robust. It shows the loader if status is loading OR if the data is not yet present.
   if (status === 'loading' || !analytics) {

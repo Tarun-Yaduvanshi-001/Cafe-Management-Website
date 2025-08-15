@@ -12,6 +12,7 @@ import Login from './pages/Login.jsx';
 import OpenRoutes from './components/OpenRoutes.jsx';
 import Menu from './pages/Menu.jsx';
 import OrderSuccess from './pages/OrderSuccess.jsx'; // 1. Import the new page
+import UserProfile from './pages/UserProfile.jsx'; 
 
 function App() {
   const dispatch = useDispatch();
@@ -37,6 +38,7 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           {/* 2. Add the new route */}
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Route>
         <Route element={<ProtectRoutes roles={['admin']} />}>
           <Route path="/dashboard" element={<Dashboard />} />

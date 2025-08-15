@@ -82,7 +82,7 @@ function NewOrderForm({ customers, menu, onSave }) {
                 </div>
             ))}
             <Button type="button" variant="outline" onClick={addItem}>Add another item</Button>
-            <div className="text-lg font-bold text-white">Total: ${total.toFixed(2)}</div>
+            <div className="text-lg font-bold text-white">Total: ₹ {total.toFixed(2)}</div>
             <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" className="bg-orange-500 hover:bg-orange-600">Create Order</Button>
@@ -140,7 +140,7 @@ export function OrdersView() {
             </DialogContent>
         </Dialog>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {(orders || []).map((order) => {
           const StatusIcon = statusIcons[order.status] || Coffee;
           return (
@@ -175,8 +175,7 @@ export function OrdersView() {
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-gray-800">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-orange-400" />
-                    <span className="text-orange-400 font-bold text-lg">${(order.totalAmount || 0).toFixed(2)}</span>
+                    <span className="text-orange-400 font-bold text-lg">₹ {(order.totalAmount || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex gap-2">
                     {order.status === "Pending" && (

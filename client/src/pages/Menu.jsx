@@ -149,7 +149,7 @@ const Menu = () => {
               <CardContent className="space-y-4">
                 <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-orange-400 font-bold text-xl">${(item.price || 0).toFixed(2)}</span>
+                  <span className="text-orange-400 font-bold text-xl">₹ {(item.price || 0).toFixed(2)}</span>
                   {item.isAvailable ? (
                     <Button 
                       onClick={() => handleAddToCart(item)} 
@@ -190,7 +190,7 @@ const Menu = () => {
                   <div key={item.productId._id} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                     <div className="flex-1">
                       <h3 className="font-medium text-white">{item.productId.name}</h3>
-                      <p className="text-orange-400 font-semibold">${item.productId.price.toFixed(2)}</p>
+                      <p className="text-orange-400 font-semibold">₹ {item.productId.price.toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <Trash2 onClick={() => handleRemoveFromCart(item.productId._id)} className="text-red-500 hover:scale-110 transition-all duration-150 ease-in-out cursor-pointer" />
@@ -204,7 +204,7 @@ const Menu = () => {
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span className="text-white">Total:</span>
-                  <span className="text-orange-400">${cart.totalPrice.toFixed(2)}</span>
+                  <span className="text-orange-400">₹ {cart.totalPrice.toFixed(2)}</span>
                 </div>
                 {/* FIX: Reconnected the handleCheckout function to the onClick event */}
                 <Button onClick={handleCheckout} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white">Place Order</Button>

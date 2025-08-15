@@ -157,7 +157,7 @@ export function MenuView() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-orange-500 font-semibold text-lg">${(item.price || 0).toFixed(2)}</span>
+                <span className="text-orange-500 font-semibold text-lg">₹ {(item.price || 0).toFixed(2)}</span>
                 <Badge className={`${categoryColors[item.category] || 'bg-gray-500'} text-white text-xs`}>{item.category}</Badge>
               </div>
               

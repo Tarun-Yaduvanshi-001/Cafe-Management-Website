@@ -68,9 +68,11 @@ function Navbar() {
                   <span className="text-xs font-normal text-gray-400">{email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-700" />
+                <Link to="/profile">
                 <DropdownMenuItem className="cursor-pointer focus:bg-gray-800">
                   Profile
                 </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem
                   className="cursor-pointer focus:bg-red-500/20 focus:text-red-400"
                   onClick={handleLogoutClick}
