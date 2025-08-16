@@ -4,6 +4,7 @@ import axios from 'axios';
 import { CheckCircle } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { getCart } from '../redux/features/CartSlice';
+import { updateLoyaltyPoints } from '../redux/features/AuthSlice'; // 1. Import the new action
 
 const OrderSuccess = () => {
     const [searchParams] = useSearchParams();
@@ -14,9 +15,12 @@ const OrderSuccess = () => {
         const sessionId = searchParams.get('session_id');
         if (sessionId) {
             axios.post('http://localhost:3000/api/payment/fulfill-order', { session_id: sessionId }, { withCredentials: true })
-                .then(() => {
-                    // Refresh the cart (which should now be empty)
+                .then((response) => {
+                    // 2. After fulfilling the order, update the cart and loyalty points
                     dispatch(getCart());
+                    if (response.data.user) {
+                        dispatch(updateLoyaltyPoints(response.data.user.loyaltyPoints));
+                    }
                 })
                 .catch(err => console.error("Error fulfilling order:", err))
                 .finally(() => setLoading(false));

@@ -1,8 +1,8 @@
 import Stripe from 'stripe';
 import Cart from '../models/cart.js';
 import Order from '../models/order.js';
+import User from '../models/user.js'; // Import the User model
 
-// Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res) => {
@@ -14,28 +14,23 @@ export const createCheckoutSession = async (req, res) => {
             return res.status(400).json({ message: 'Your cart is empty.' });
         }
 
-        // Format cart items for Stripe
         const line_items = cart.items.map(item => ({
             price_data: {
-                currency: 'usd',
+                currency: 'inr', // Changed to INR
                 product_data: {
                     name: item.productId.name,
-                    // You can add images here if your product model has them
-                    // images: [item.productId.image],
                 },
-                unit_amount: Math.round(item.productId.price * 100), // Price in cents
+                unit_amount: Math.round(item.productId.price * 100),
             },
             quantity: item.quantity,
         }));
 
-        // Create a checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items,
             mode: 'payment',
             success_url: `http://localhost:5173/order-success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `http://localhost:5173/menu`,
-            // Pass the userId in metadata to create the order later
             metadata: {
                 userId: userId.toString(),
             }
@@ -49,8 +44,6 @@ export const createCheckoutSession = async (req, res) => {
     }
 };
 
-// This function will be used with a webhook later for more robust order creation,
-// but for a dummy system, we can create the order on success redirect.
 export const fulfillOrder = async (req, res) => {
     try {
         const { session_id } = req.body;
@@ -61,7 +54,6 @@ export const fulfillOrder = async (req, res) => {
             const cart = await Cart.findOne({ userId });
 
             if (cart) {
-                // Create a new order from the cart details
                 await Order.create({
                     userId,
                     items: cart.items,
@@ -70,7 +62,15 @@ export const fulfillOrder = async (req, res) => {
                     status: 'Pending',
                 });
 
-                // Clear the user's cart
+                // Award loyalty points
+                const user = await User.findById(userId);
+                if (user) {
+                    // Award 1 point for every ₹10 spent
+                    const pointsEarned = Math.floor(cart.totalPrice / 10);
+                    user.loyaltyPoints += pointsEarned;
+                    await user.save();
+                }
+
                 await Cart.findByIdAndDelete(cart._id);
             }
         }

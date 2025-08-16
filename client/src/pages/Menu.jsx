@@ -14,11 +14,11 @@ import { addToCart, getCart, removeItemFromCart, updateCartQuantity } from '../r
 import { fetchProducts } from '../redux/features/productSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
-import { loadStripe } from '@stripe/stripe-js'; // Import loadStripe
+import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Initialize Stripe outside the component
+// Initialize Stripe outside the component with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const categories = ['All', 'Coffee', 'Pastry', 'Food', 'Tea', 'Dessert'];
@@ -61,9 +61,11 @@ const Menu = () => {
     toast.info("Redirecting to payment...");
     try {
         const stripe = await stripePromise;
+        // Create a checkout session on the backend
         const response = await axios.post('http://localhost:3000/api/payment/create-checkout-session', {}, { withCredentials: true });
         const session = response.data;
         
+        // Redirect to the Stripe-hosted checkout page
         const result = await stripe.redirectToCheckout({
             sessionId: session.id,
         });
@@ -140,7 +142,8 @@ const Menu = () => {
                     </div>
                     <div className="flex items-center gap-1 mb-2">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-yellow-400 text-sm font-medium">{item.rating || 'N/A'}</span>
+                      <span className="text-yellow-400 text-sm font-medium">{item.averageRating > 0 ? item.averageRating.toFixed(1) : 'N/A'}</span>
+                      <span className="text-gray-400 text-xs">({item.numReviews} reviews)</span>
                     </div>
                   </div>
                   <Coffee className="w-8 h-8 text-orange-400/50 group-hover:text-orange-400 transition-colors" />
@@ -206,7 +209,6 @@ const Menu = () => {
                   <span className="text-white">Total:</span>
                   <span className="text-orange-400">₹ {cart.totalPrice.toFixed(2)}</span>
                 </div>
-                {/* FIX: Reconnected the handleCheckout function to the onClick event */}
                 <Button onClick={handleCheckout} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white">Place Order</Button>
               </div>
             </SheetContent>

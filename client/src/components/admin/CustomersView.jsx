@@ -46,6 +46,7 @@ export function CustomersView() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredCustomers.map((customer) => {
+          // FIX: Use the customer's loyaltyPoints to generate the badge
           const loyaltyBadge = getLoyaltyBadge(customer.loyaltyPoints || 0);
           
           return (
@@ -75,11 +76,11 @@ export function CustomersView() {
 
                 <div className="flex justify-between items-center pt-2 border-t border-gray-800">
                   <div>
+                    {/* FIX: Display the customer's loyalty points */}
                     <p className="text-white text-sm">{(customer.loyaltyPoints || 0)} points</p>
                     <p className="text-gray-400 text-xs">Loyalty Points</p>
                   </div>
                   <div className="text-right">
-                    {/* FIX: Safely handle potentially missing lastlogin date */}
                     <p className="text-white text-sm">{customer.lastlogin ? new Date(customer.lastlogin).toLocaleDateString() : 'N/A'}</p>
                     <p className="text-gray-400 text-xs">Last Visit</p>
                   </div>

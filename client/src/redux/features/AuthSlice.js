@@ -1,7 +1,6 @@
 import { setCookie, removeCookie } from '../../../utils/utils';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-// Import signInWithPopup
 import { signOut, signInWithPopup } from 'firebase/auth';
 import { auth, googleAuthProvider } from './../../config/firebase';
 
@@ -15,6 +14,7 @@ const initialState = {
   id: null,
   role: null,
   email: null,
+  loyaltyPoints: 0,
 };
 
 export const verifyAppSession = createAsyncThunk('auth/verifyAppSession', async (_, { rejectWithValue }) => {
@@ -40,19 +40,14 @@ export const signup = createAsyncThunk('auth/signup', async (data, { rejectWithV
     } catch (error) { return rejectWithValue(error.response?.data || 'Signup failed'); }
 });
 
-// NEW: Function to handle Google Sign-In via Pop-up
 export const signInWithGoogle = createAsyncThunk('auth/signInWithGoogle', async (_, { rejectWithValue }) => {
     try {
-        // 1. Open the Google Sign-In pop-up
         const result = await signInWithPopup(auth, googleAuthProvider);
-        // 2. Get the idToken from the successful sign-in
         const idToken = await result.user.getIdToken();
-        // 3. Send the token to our backend for verification and session creation
         const response = await axios.post(`${API_BASE_URL}/auth/verify-google`, { idToken }, { withCredentials: true });
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data || { message: error.message || 'Google Sign-In failed.' };
-        return rejectWithValue(errorMessage);
+        return rejectWithValue(error.response?.data || { message: 'Google Sign-In failed.' });
     }
 });
 
@@ -70,6 +65,10 @@ const AuthSlice = createSlice({
   reducers: {
     setInitializing: (state, action) => {
         state.isInitializing = action.payload;
+    },
+    // FIX: Add a new reducer to update loyalty points after a purchase
+    updateLoyaltyPoints: (state, action) => {
+        state.loyaltyPoints = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -79,6 +78,7 @@ const AuthSlice = createSlice({
       state.id = action.payload.id;
       state.role = action.payload.role;
       state.email = action.payload.email;
+      state.loyaltyPoints = action.payload.loyaltyPoints; // Store loyalty points
       setCookie('name', action.payload.name, { expires: 1 });
       setCookie('id', action.payload.id, { expires: 1 });
       setCookie('authenticated', action.payload.authenticated, { expires: 1 });
@@ -86,15 +86,8 @@ const AuthSlice = createSlice({
     };
 
     const handleLogout = (state) => {
-      state.authenticated = false;
-      state.name = null;
-      state.id = null;
-      state.role = null;
-      state.email = null;
-      removeCookie('name');
-      removeCookie('id');
-      removeCookie('authenticated');
-      removeCookie('role');
+      state.authenticated = false; state.name = null; state.id = null; state.role = null; state.email = null; state.loyaltyPoints = 0;
+      removeCookie('name'); removeCookie('id'); removeCookie('authenticated'); removeCookie('role');
     };
 
     builder
@@ -121,7 +114,6 @@ const AuthSlice = createSlice({
         state.isInitializing = false;
       });
 
-    // ADDED: Builder case for the new Google Sign-In action
     builder
         .addCase(signInWithGoogle.pending, (state) => { state.isLoading = true; })
         .addCase(signInWithGoogle.fulfilled, (state, action) => {
@@ -132,5 +124,5 @@ const AuthSlice = createSlice({
   },
 });
 
-export const { setInitializing } = AuthSlice.actions;
+export const { setInitializing, updateLoyaltyPoints } = AuthSlice.actions;
 export default AuthSlice.reducer;

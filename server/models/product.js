@@ -20,38 +20,33 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  sizes: [
-    {
-      name: {
-        type: String,
-        enum: ['small', 'medium', 'large', 'extra-large'],
-      },
-      price: {
-        type: Number,
-        min: 0,
-      },
-    },
-  ],
-  image: {
-    type: String,
-    default: null,
-  },
   isAvailable: {
     type: Boolean,
     default: true,
   },
-  rating : [{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : 'Rating'
+  // This array will store references to individual rating documents
+  ratings: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Rating'
   }],
-  // FIX: Add the missing createdBy field
+  // These fields will store the calculated average
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  numReviews: {
+    type: Number,
+    default: 0,
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   }
 }, {
-    timestamps: true // Adds createdAt and updatedAt fields automatically
+    timestamps: true
 });
 
 const Product = mongoose.model('Product', productSchema);

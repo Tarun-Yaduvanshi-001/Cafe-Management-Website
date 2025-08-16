@@ -8,7 +8,6 @@ const orderSchema = new mongoose.Schema({
   },
   items: [
     {
-      // FIX: Rename 'product' to 'productId' to match the rest of your app
       productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
@@ -18,6 +17,14 @@ const orderSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
+      isRated: {
+        type: Boolean,
+        default: false,
+      },
+      // FIX: Add a field to store the rating the user gave
+      rating: {
+        type: Number,
+      }
     },
   ],
   totalAmount: {
