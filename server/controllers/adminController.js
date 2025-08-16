@@ -26,11 +26,21 @@ export const updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
+        
+        // First, update the order status
         const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+        
         if (!updatedOrder) {
             return res.status(404).json({ message: 'Order not found.' });
         }
-        res.status(200).json({ success: true, order: updatedOrder });
+
+        // FIX: After updating, find the order again and populate it with the details
+        // that the frontend needs to display correctly.
+        const populatedOrder = await Order.findById(updatedOrder._id)
+            .populate('userId', 'name')
+            .populate('items.productId', 'name price');
+
+        res.status(200).json({ success: true, order: populatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error);
         res.status(500).json({ message: 'Server error updating order status.', error: error.message });
